@@ -148,3 +148,30 @@ Attacks and defenses are described by layer:
 - **L4**: port scanning (Nmap), SYN flood (denial of service).
 - **L7**: web attacks (SQL injection, XSS), phishing.
 - A classic firewall filters at layers 3-4 (IP + port); a WAF (Web Application Firewall) filters at layer 7.
+
+## Subnetting - Method and exercises
+
+### Method (for /24 and above)
+1. Host bits = 32 - prefix (e.g. /26 -> 6 host bits)
+2. Block size = 2^(host bits) (e.g. 2^6 = 64)
+3. Usable hosts = block size - 2 (network address + broadcast removed)
+4. Network address = largest multiple of the block size <= last octet
+5. Broadcast = network address + block size - 1
+6. Mask last octet = 256 - block size (e.g. 256 - 64 = 192 -> 255.255.255.192)
+
+### Exercises
+
+| Address | Mask | Network | Broadcast | Usable hosts |
+| --- | --- | --- | --- | --- |
+| 192.168.1.77/24 | 255.255.255.0 | 192.168.1.0 | 192.168.1.255 | 254 |
+| 192.168.1.77/26 | 255.255.255.192 | 192.168.1.64 | 192.168.1.127 | 62 |
+| 172.16.5.130/25 | 255.255.255.128 | 172.16.5.128 | 172.16.5.255 | 126 |
+| 192.168.10.45/27 | 255.255.255.224 | 192.168.10.32 | 192.168.10.63 | 30 |
+| 10.0.0.200/28 | 255.255.255.240 | 10.0.0.192 | 10.0.0.207 | 14 |
+
+### Why it matters
+- Subnetting tells whether two machines are on the same network:
+    - same subnet -> direct communication through the switch (ARP, layer 2)
+    - different subnet -> traffic goes through the default gateway / router (layer 3)
+- Pentest: after getting an IP, compute its subnet to know which range to scan (`nmap 192.168.1.64/26`).
+- SOC / firewall rules and logs use CIDR notation (/24, /26...) everywhere.
