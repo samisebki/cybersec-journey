@@ -108,3 +108,43 @@ A topology = how the devices of a network are physically/logically connected.
 - Subnetting enables **network segmentation**: if one subnet is compromised, the attacker can't easily reach the others (limits lateral movement).
 - ARP has **no authentication**: an attacker can send fake ARP replies (**ARP spoofing**) to place himself between two machines = man-in-the-middle.
 - DHCP can be abused too: a **rogue DHCP server** can give victims a fake gateway or DNS; **DHCP starvation** exhausts all available IPs.
+
+## Professor Messer - Understanding the OSI Model (Network+ N10-009, 1.1)
+
+### What is the OSI model?
+- OSI = **Open Systems Interconnection** reference model.
+- A framework that describes how data travels through a network, in **7 layers**. Each layer has its own role and protocols.
+- Used every day to **troubleshoot** ("it's a layer 1 problem" = probably a cable) and to talk about equipment and attacks.
+- Mnemonic from layer 7 to layer 1: **A**ll **P**eople **S**eem **T**o **N**eed **D**ata **P**rocessing.
+
+### The 7 layers
+
+| # | Layer | Role | Data unit | Examples |
+| --- | --- | --- | --- | --- |
+| 7 | Application | Protocols used by applications to talk on the network (not the app itself) | Data | HTTP/HTTPS, DNS, FTP, SMTP, POP3 |
+| 6 | Presentation | Formats the data: character encoding, compression, encryption/decryption | Data | TLS (SSL is the old, obsolete version), JPEG, ASCII/UTF-8 |
+| 5 | Session | Opens, maintains and closes the communication (session) between two applications | Data | Control protocols, tunneling protocols (PPTP, L2TP) |
+| 4 | Transport | Delivers data from one application to another (end to end), using **ports** | Segment (TCP) / Datagram (UDP) | **TCP** = reliable, connection (3-way handshake); **UDP** = fast, no delivery guarantee |
+| 3 | Network | Routes traffic between different networks using **IP addresses** | Packet | IP, ICMP, routers |
+| 2 | Data Link | Communication between devices of the **same local network** using **MAC addresses** ("switching layer") | Frame | Ethernet, MAC (EUI-48), switches, ARP |
+| 1 | Physical | Transmission of the raw signal: electrical, light, radio | Bits | Cables, fiber, Wi-Fi signal, hubs |
+
+- Problem with IP addresses or subnet masks -> layer 3. Problem with a cable or signal -> layer 1.
+- In practice, layers 5, 6 and 7 are often grouped together (that's how the TCP/IP model sees them).
+
+### Encapsulation
+When sending, each layer adds its own header around the data from the layer above:
+Data -> **Segment** (+ TCP/UDP header, ports) -> **Packet** (+ IP header, IP addresses) -> **Frame** (+ Ethernet header, MAC addresses) -> **Bits** on the wire.
+The receiver does the opposite (decapsulation).
+
+### Wireshark
+- Wireshark captures network traffic and shows each packet **layer by layer** (Ethernet -> IP -> TCP/UDP -> application protocol): the OSI model in practice.
+
+### Pourquoi c'est important en sécu
+Attacks and defenses are described by layer:
+- **L1**: physical access, cable tapping, Wi-Fi jamming.
+- **L2**: ARP spoofing, MAC flooding (seen in Intro to LAN).
+- **L3**: IP spoofing, ICMP abuse (ping sweeps for reconnaissance).
+- **L4**: port scanning (Nmap), SYN flood (denial of service).
+- **L7**: web attacks (SQL injection, XSS), phishing.
+- A classic firewall filters at layers 3-4 (IP + port); a WAF (Web Application Firewall) filters at layer 7.
