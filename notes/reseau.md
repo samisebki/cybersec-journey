@@ -175,3 +175,40 @@ Attacks and defenses are described by layer:
     - different subnet -> traffic goes through the default gateway / router (layer 3)
 - Pentest: after getting an IP, compute its subnet to know which range to scan (`nmap 192.168.1.64/26`).
 - SOC / firewall rules and logs use CIDR notation (/24, /26...) everywhere.
+
+## Lab - My first Wireshark capture (home Wi-Fi)
+
+### My network
+- `192.168.1.254` = Freebox = default gateway (Wireshark shows "FreeboxSas" thanks to the MAC OUI `38:07:16`).
+- `192.168.1.8` = my Mac. MAC `f2:33:bd:66:d6:cf` = **randomized private MAC** (first octet `f2` -> "locally administered" bit set). macOS uses a different MAC per Wi-Fi network to prevent tracking.
+- My Mac also has a **public IPv6** (`2a01:e0a:...`, a Free prefix): with IPv6 there is no NAT, every device gets its own global address.
+
+### ARP (filter `arp`)
+- Freebox: "Who has 192.168.1.8? Tell 192.168.1.254" -> my Mac: "192.168.1.8 is at f2:33:bd:66:d6:cf".
+- My Mac: "Who has 192.168.1.29?" sent to **Broadcast** (MAC unknown), no reply -> device off or asleep.
+- Ethernet type `0x0806` = ARP. In hex, `c0 a8 01 fe` = 192.168.1.254.
+
+### DNS (filter `dns`)
+- My Mac asks the Freebox (`192.168.1.254`), which acts as DNS resolver, over **UDP port 53**.
+- Record types: **A** (IPv4 address), **AAAA** (IPv6 address), **HTTPS** (connection info for the site).
+- Each query and its response share the same transaction ID (e.g. `0x9a51`).
+- `gdmf.apple.com` is an alias (CNAME) of `gdmf.v.aaplimg.com`: one name can point to another.
+
+### ICMP / ping (filter `icmp`)
+- Echo request (`ttl=64`, macOS default) -> Echo reply from 8.8.8.8 (`ttl=116`).
+- Google sends with TTL 128 -> 128 - 116 = **12 routers** between me and Google.
+- Same `id` for the whole ping session, `seq` increases by 1 for each packet. Round trip ≈ 10 ms.
+
+### TCP 3-way handshake (filter `tcp.flags.syn == 1`)
+1. **SYN**: my Mac (random port, e.g. 61054) -> server port **443** (HTTPS): "I want to connect"
+2. **SYN-ACK**: server -> my Mac: "OK, ready"
+3. **ACK**: my Mac -> server: "Connection established" (not shown by this filter; use `tcp.stream eq N` to see the whole conversation)
+- Most connections use **IPv6** (Ethernet type `0x86dd`), one uses IPv4 (`192.168.1.8 -> 17.171.47.23`, an Apple server).
+- The destination MAC is always the Freebox: the server is on another network, so the frame goes to the **default gateway** (layer 2), which routes it (layer 3).
+
+### Pourquoi c'est important en sécu
+- **DNS is not encrypted** by default: anyone on the network can see which sites I visit. Attacks: DNS spoofing (fake answers), DNS tunneling (hiding data in DNS queries).
+- **ICMP**: ping sweeps reveal live hosts; TTL values can hint at the OS (64 = Linux/macOS, 128 = Windows).
+- **TCP handshake** = basis of port scanning: Nmap's SYN scan sends a SYN; a SYN-ACK back means the port is open. A SYN flood sends thousands of SYNs without finishing the handshake (denial of service).
+- **IPv6** gives each device a public address: the router's firewall is what protects internal machines, not NAT.
+- Wireshark is a key tool for SOC analysts: reading packets layer by layer to investigate incidents.
