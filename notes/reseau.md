@@ -212,3 +212,40 @@ Attacks and defenses are described by layer:
 - **TCP handshake** = basis of port scanning: Nmap's SYN scan sends a SYN; a SYN-ACK back means the port is open. A SYN flood sends thousands of SYNs without finishing the handshake (denial of service).
 - **IPv6** gives each device a public address: the router's firewall is what protects internal machines, not NAT.
 - Wireshark is a key tool for SOC analysts: reading packets layer by layer to investigate incidents.
+
+## Professor Messer - Common Ports (Network+ N10-009, 1.4)
+
+| Port | Protocol | Use | Encrypted? |
+| --- | --- | --- | --- |
+| tcp/20, tcp/21 | **FTP** | File transfer (20 = data in active mode, 21 = control), username + password | No (password in clear) |
+| tcp/22 | **SSH** | Encrypted remote terminal | Yes |
+| tcp/22 | **SFTP** | File transfer over SSH | Yes |
+| tcp/23 | **Telnet** | Remote terminal, like SSH but in clear | No |
+| tcp/25 | **SMTP** | Email sending, server to server | No by default |
+| tcp/587 | **SMTP** (submission) | Email sending from a client to its mail server, with authentication + TLS | Yes |
+| udp/53 (tcp/53) | **DNS** | Name -> IP address; TCP for large transfers (zone transfers) | No by default |
+| udp/67, udp/68 | **DHCP** | Automatic IP configuration (67 = server, 68 = client) | No |
+| udp/69 | **TFTP** | Very simple file transfer (configs, firmware), no authentication | No |
+| tcp/80 | **HTTP** | Web, in clear | No |
+| tcp/443 | **HTTPS** | Web encrypted with TLS | Yes |
+| udp/123 | **NTP** | Synchronizes the clocks of all devices with a time server | No |
+| udp/161 | **SNMP** | Queries network devices for statistics | v1/v2 no, v3 yes |
+| udp/162 | **SNMP traps** | Devices send alerts to the management server | v1/v2 no, v3 yes |
+| tcp/389 | **LDAP** | Read/write in a network directory (users, groups) | No |
+| tcp/636 | **LDAPS** | LDAP over TLS | Yes |
+| tcp/445 | **SMB** (CIFS) | Windows file and printer sharing | Depends on version |
+| udp/514 | **Syslog** | Sending logs to a central log server | No |
+| tcp/1433 | **Microsoft SQL Server** | Database queries | Optional |
+| tcp/3389 | **RDP** | Remote Windows desktop | Yes |
+| tcp/5060, tcp/5061 | **SIP** | Setting up and managing VoIP calls (5060 in clear, 5061 with TLS) | 5061 only |
+
+### Notes
+- To receive email, clients use **IMAP** or **POP3** (SMTP is only for sending).
+- DHCP: at home the box does it; in companies a dedicated DHCP server. A **DHCP reservation** always gives the same IP to the same MAC address.
+- NTP matters because logs from different machines must have the same time to be compared during an investigation.
+
+### Pourquoi c'est important en sécu
+- Insecure protocol -> secure replacement: FTP -> **SFTP**, Telnet -> **SSH**, HTTP -> **HTTPS**, LDAP -> **LDAPS**, SNMP v1/v2 -> **SNMPv3**. Protocols in clear expose passwords to anyone sniffing the network (Wireshark).
+- An Nmap scan lists the open ports of a machine: knowing the ports tells you which services run and what to attack or protect.
+- **SMB (445)** and **RDP (3389)** exposed to the Internet are among the most attacked services (e.g. WannaCry ransomware used an SMB flaw in 2017).
+- **Syslog** and **NTP** are the basis of a SOC: centralized logs with synchronized timestamps.
