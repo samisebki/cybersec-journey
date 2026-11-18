@@ -249,3 +249,28 @@ Attacks and defenses are described by layer:
 - An Nmap scan lists the open ports of a machine: knowing the ports tells you which services run and what to attack or protect.
 - **SMB (445)** and **RDP (3389)** exposed to the Internet are among the most attacked services (e.g. WannaCry ransomware used an SMB flaw in 2017).
 - **Syslog** and **NTP** are the basis of a SOC: centralized logs with synchronized timestamps.
+
+## Lab - Following a TCP stream and listing open ports
+
+### Full HTTP conversation (`curl http://example.com`, filter `tcp.stream eq 12`)
+- Handshake: `[SYN]` -> `[SYN, ACK]` -> `[ACK]`, then the data, then the closing with `[FIN, ACK]` packets.
+- Ports: my Mac used a random source port (**59889**) to reach the server on port **80** (HTTP). The server's `[FIN, ACK]` goes `80 -> 59889`.
+- **Request** (client, in red in Wireshark): `GET / HTTP/1.1`, `Host: example.com`, `User-Agent: curl/8.12.1` (the tool I used), `Accept: */*`.
+- **Response** (server, in blue): `HTTP/1.1 200 OK`, then headers, then the HTML of the page.
+- Interesting headers: `Server: cloudflare` (the site is behind the Cloudflare CDN), `cf-cache-status: HIT` (page served from Cloudflare's cache), `Allow: GET, HEAD` (accepted methods), `alt-svc: h3=":443"` (the site also offers HTTP/3 on port 443).
+
+### Open ports on my Mac (`lsof -i -P | grep LISTEN`)
+
+| Program | Ports | What it is | Listening on |
+| --- | --- | --- | --- |
+| rapportd | 59418, 58586, 58587 | Apple service that lets my Apple devices talk to each other (Handoff, Continuity) | `*` = all interfaces |
+| ControlCenter | 5000, 7000 | **AirPlay receiver** (receiving video/music from another Apple device) | `*` = all interfaces |
+
+- `*` = reachable from any device on the **local network**. `localhost` / `127.0.0.1` = reachable only from the Mac itself.
+- From the Internet, the Freebox firewall normally blocks incoming connections.
+
+### Pourquoi c'est important en sécu
+- **HTTP is in clear**: anyone sniffing the network can read the full request and response (URLs, cookies, form data, passwords). That's why HTTPS is mandatory.
+- Headers leak information useful for **reconnaissance**: `User-Agent` reveals the client tool, `Server` reveals the server/CDN technology.
+- Every open port = a potential entry point (**attack surface**). Good practice: close unused services (e.g. disable the AirPlay receiver if not used) and enable the macOS firewall.
+- `lsof` / `netstat` on a machine and **Nmap** from the network show the same thing from two sides: what's listening.
