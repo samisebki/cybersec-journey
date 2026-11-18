@@ -274,3 +274,40 @@ Attacks and defenses are described by layer:
 - Headers leak information useful for **reconnaissance**: `User-Agent` reveals the client tool, `Server` reveals the server/CDN technology.
 - Every open port = a potential entry point (**attack surface**). Good practice: close unused services (e.g. disable the AirPlay receiver if not used) and enable the macOS firewall.
 - `lsof` / `netstat` on a machine and **Nmap** from the network show the same thing from two sides: what's listening.
+
+## Lab - DNS with dig and HTTP with curl
+
+### DNS (`dig`)
+- The DNS server that answered is shown on the **SERVER** line (here `192.168.100.1#53` = my router, port 53).
+- In the ANSWER SECTION, the number after the name is the **DNS TTL**: how many seconds the answer can stay in cache (not the same as the IP TTL of ping).
+
+| Command | Record | Result | Meaning |
+| --- | --- | --- | --- |
+| `dig google.com` | A | `192.178.25.110` (TTL 17 s) | IPv4 address |
+| `dig AAAA google.com` | AAAA | `2a00:1450:4003:818::200e` | IPv6 address |
+| `dig MX gmail.com` | MX | 5 servers, priority 5 to 40 | Mail servers; **lowest number = used first**, the others are backups |
+| `dig NS google.com` | NS | `ns1` to `ns4.google.com` | Official DNS servers of the domain (4 for redundancy) |
+| `dig TXT google.com` | TXT | `v=spf1 include:_spf.google.com ~all` | **SPF**: lists the servers allowed to send email for google.com |
+| `dig www.github.com` | CNAME + A | `www.github.com` -> `github.com` -> `140.82.121.3` | Alias, then the real address |
+
+### HTTP (`curl`)
+- `curl -v`: lines with `>` = what I send, lines with `<` = what the server answers.
+- example.com resolved to 2 IPv4 addresses (several servers for load balancing and redundancy).
+- Response codes seen:
+    - **200 OK**: success
+    - **301 Moved Permanently**: redirect, the new address is in the `Location` header (`http://google.com` -> `http://www.google.com/`)
+    - **404 Not Found**: the page doesn't exist
+- Code families: **2xx** success, **3xx** redirect, **4xx** client error (403 forbidden, 404 not found), **5xx** server error (500).
+- Google sends **security headers**: `X-Frame-Options: SAMEORIGIN` (blocks clickjacking), `Content-Security-Policy` (limits which scripts can run).
+
+### HTTPS (`curl -v https://example.com`)
+- Before any HTTP request, a **TLS 1.3 handshake** sets up encryption.
+- The server sends a **certificate chain** (levels 0 to 3): the site's certificate (level 0) is signed by intermediate authorities, up to a trusted **root certificate authority (CA)**. This chain proves I'm talking to the real example.com.
+- Only then is the HTTP request sent, encrypted, on port **443**.
+
+### Pourquoi c'est important en sécu
+- **DNS recon (OSINT)**: MX, NS and TXT records reveal a company's infrastructure (mail provider, DNS hosting, cloud services) before any attack.
+- **SPF** (with DKIM and DMARC) protects against **email spoofing and phishing**: a server not listed in SPF shouldn't send mail for the domain.
+- **HTTP response codes** are read all day in pentest (403 = something exists but is protected) and in SOC (lots of 404 = someone scanning the site).
+- **Security headers** missing on a site = classic finding in a web pentest report.
+- The **certificate chain** is what makes HTTPS trustworthy: a fake certificate during a man-in-the-middle attack triggers a browser warning.
