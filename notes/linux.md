@@ -30,3 +30,9 @@
 ## Lien avec la sécurité
 - Fichiers cachés et dossiers système : endroits où un attaquant cache des fichiers
 - `find` par propriétaire, taille ou droits : réflexe d'investigation et d'élévation de privilèges en pentest
+## Filtrer et enchaîner les commandes
+- `grep mot fichier` : afficher les lignes qui contiennent un mot (`-w` = mot entier)
+- `sort` : trier les lignes · `uniq -u` : garder les lignes uniques (le fichier doit être trié avant)
+- Pipe `|` : envoie le résultat d'une commande dans la suivante, ex. `sort data.txt | uniq -u`. On ne redonne pas le nom du fichier à la deuxième commande.
+- `strings fichier` : extraire le texte lisible d'un fichier binaire (base de l'analyse de malware)
+- Usage SOC : `grep "Failed password" auth.log` pour repérer les tentatives SSH ratées
