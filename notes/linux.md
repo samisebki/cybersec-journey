@@ -36,3 +36,18 @@
 - Pipe `|` : envoie le résultat d'une commande dans la suivante, ex. `sort data.txt | uniq -u`. On ne redonne pas le nom du fichier à la deuxième commande.
 - `strings fichier` : extraire le texte lisible d'un fichier binaire (base de l'analyse de malware)
 - Usage SOC : `grep "Failed password" auth.log` pour repérer les tentatives SSH ratées
+- 
+## Encodage, compression, réseau (Bandit 10 à 19)
+- `base64 -d` : décoder du Base64. Encoder ≠ chiffrer : aucune clé, tout le monde peut décoder
+- `tr 'a-zA-Z' 'n-za-mN-ZA-M'` : ROT13 (chiffre de César), cassé en une ligne
+- `xxd -r` : hexdump → fichier · `file` reconnaît un fichier à sa signature (magic bytes), pas à son nom
+- gzip (`gunzip`), bzip2 (`bunzip2`), tar (`tar -xf`) : `>` crée le fichier AVANT la commande
+- `mktemp -d` : dossier de travail temporaire
+- Clé SSH : `scp -P port user@host:fichier .` · `chmod 600 cle` · `ssh -i cle user@host -p port`
+- `nc host port` : parler en clair à un port TCP · `openssl s_client -connect host:port -quiet` : en TLS
+- Certificat auto-signé = chiffré mais pas authentifié → risque d'homme du milieu
+- `nmap -sV -p31000-32000 host` : plage de ports + détection des services
+- `diff a b` : différences entre deux fichiers
+- `ssh user@host "commande"` : exécuter une commande sans ouvrir de session (contourne un `.bashrc` piégé)
+- `.bashrc` modifié = technique de persistance d'attaquant
+- Binaire **setuid** (`s` dans `ls -l`) : s'exécute avec les droits du propriétaire → élévation de privilèges ; recherche : `find / -perm -4000 2>/dev/null`
