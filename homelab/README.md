@@ -48,6 +48,20 @@ flowchart LR
 
 **Conclusion défensive** : chaque port ouvert agrandit la surface d'attaque. Il faut fermer les services inutiles et remplacer les protocoles en clair (Telnet → SSH, FTP → SFTP).
 
+##Captures d'écran tirées de la mise en place du homelab: 
+<img width="586" height="173" alt="09-ping-kali-metasploitable" src="https://github.com/user-attachments/assets/94e2bc72-aaf9-41d2-8e15-792b64a4dc68" />
+<img width="750" height="375" alt="08-metasploitable-ifconfig" src="https://github.com/user-attachments/assets/fee34c84-2f9e-4e5f-a719-6f27d5296701" />
+<img width="338" height="759" alt="07-utm-cartes-reseau" src="https://github.com/user-attachments/assets/374a14b4-50e9-405f-8679-2c9ba212a95c" />
+<img width="633" height="202" alt="06-metasploitable-sans-ip" src="https://github.com/user-attachments/assets/19f172c5-f202-4a29-abe4-cc36118d800a" />
+<img width="1376" height="933" alt="05-kali-bureau" src="https://github.com/user-attachments/assets/bd7ceaaf-757b-4212-8375-705f154bf47c" />
+<img width="1250" height="835" alt="04-kali-installation-dhcp" src="https://github.com/user-attachments/assets/93770c51-4146-4024-ba4b-3cc0a6ef1712" />
+<img width="785" height="653" alt="03-kali-terminal-serie" src="https://github.com/user-attachments/assets/2f0a1bb6-e8c7-4897-b534-136830ae41bf" />
+<img width="734" height="506" alt="02-kali-menu-grub" src="https://github.com/user-attachments/assets/015c0159-2c79-4799-8ba8-90a84e423e9f" />
+<img width="796" height="657" alt="01-kali-ecran-noir" src="https://github.com/user-attachments/assets/7c6e2d9c-b695-4bc5-9630-da10206d3d00" />
+
+
+
+
 ## Prochaines étapes
 - [ ] Rapport de test d'intrusion complet de Metasploitable (énumération, exploitation, recommandations)
 - [ ] Ajout d'un serveur Ubuntu avec SIEM Wazuh pour détecter les attaques
